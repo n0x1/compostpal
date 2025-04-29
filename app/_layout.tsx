@@ -5,6 +5,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import 'react-native-reanimated';
+import { StyleSheet, SafeAreaView, View } from 'react-native';
 
 import { useColorScheme } from '@/hooks/useColorScheme';
 
@@ -29,11 +30,26 @@ export default function RootLayout() {
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="+not-found" />
-      </Stack>
-      <StatusBar style="auto" />
+      <SafeAreaView style={styles.safeArea}>
+        <View style={styles.rootContainer}>
+          <Stack>
+            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+            <Stack.Screen name="+not-found" />
+          </Stack>
+        </View>
+        <StatusBar style="light" backgroundColor="#FFFFFF" />
+      </SafeAreaView>
     </ThemeProvider>
   );
 }
+
+const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#EFF8DC', // Match the category section background
+  },
+  rootContainer: {
+    flex: 1,
+    backgroundColor: '#FFF8DC', // Match the category section background
+  },
+});
