@@ -180,7 +180,7 @@ export default function ExploreScreen() {
   const alreadyCompletedToday = quizStats.lastQuizDate === today;
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent}>
       <View style={styles.header}>
         <Image
           source={require('@/assets/images/logo.png')}
@@ -319,6 +319,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#FFF8DC',
+  },
+  scrollContent: {
+    paddingBottom: 100,
   },
   header: {
     alignItems: 'center',

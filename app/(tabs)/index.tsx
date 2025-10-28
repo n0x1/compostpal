@@ -59,6 +59,8 @@ const predefinedMapping: Record<string, string[]> = {
     'coconut shell', 'coconut husk', 'pinecone', 'acorn', 'nut shell', 'egg carton', 'dried flower', 'grass clippings', 'mulch', 'autumn leaves', 'pine needles',
     'moss', 'lawn clippings', 'leaves', 'weeds', 'sawdust', 'manure', 'farming waste', 'composting waste', 'compostable container', 'garden waste',
     'organic waste', 'compost bin', 'soil additive', 'green waste', 'organic matter', 'biodegradable', 'plant material',
+    // ImageNet compostable items
+    'hay', 'buckeye', 'horse chestnut', 'conker', 'coral fungus', 'agaric', 'gyromitra', 'stinkhorn', 'carrion fungus', 'earthstar', 'hen-of-the-woods', 'hen of the woods', 'bolete', 'ear', 'spike', 'capitulum', 'toilet tissue', 'toilet paper', 'bathroom tissue',
   ],
   recycle: [
     // Paper and cardboard products (general)
@@ -77,7 +79,9 @@ const predefinedMapping: Record<string, string[]> = {
     // Miscellaneous recyclable items
     'furniture', 'appliance', 'electronics', 'recyclable waste', 'plastic container', 'tote', 'plastic utensil', 'foil tray', 'plastic cup',
     // Textiles must be recycled in Massachusetts!
-    'clothes', 'shirt', 'pants', 'hat', 'shoes', 'sweater', 'jacket', 'coat', 'dress', 'skirt', 'blouse', 'jeans', 'shorts'
+    'clothes', 'shirt', 'pants', 'hat', 'shoes', 'sweater', 'jacket', 'coat', 'dress', 'skirt', 'blouse', 'jeans', 'shorts',
+    // ImageNet recyclable items
+    'comic book', 'crossword puzzle', 'crossword', 'street sign', 'traffic light', 'traffic signal', 'stoplight', 'book jacket', 'dust cover', 'dust jacket', 'dust wrapper', 'menu', 'plate', 'beer bottle', 'beer glass', 'wine bottle', 'cup', 'cellular telephone', 'cellular phone', 'cellphone', 'cell', 'mobile phone', 'laptop', 'laptop computer', 'desktop computer', 'monitor', 'printer', 'computer keyboard', 'keypad', 'mouse', 'computer mouse', 'can opener', 'tin opener', 'bottlecap', 'corkscrew', 'bottle screw', 'jean', 'blue jean', 'denim', 'jersey', 'T-shirt', 'tee shirt', 'ipod'
   ],
   trash: [
     // Non-recyclable plastics and containers
@@ -91,7 +95,9 @@ const predefinedMapping: Record<string, string[]> = {
     'old furniture', 'broken appliance', 'broken device', 'damaged electronics', 'shredded paper', 'damaged box', 'ruined book', 'cracked mirror', 'broken chair',
     // Mixed waste and non-compostables
     'rubber', 'fabric', 'leather', 'vinyl', 'latex', 'foil', 'waxed paper', 'plastic film', 'foam', 'gum wrapper', 'gift wrap', 'ribbon', 'string', 'tape',
-    'diaper', 'sanitary product', 'old carpet', 'broken toy', 'old phone', 'packet'
+    'diaper', 'sanitary product', 'old carpet', 'broken toy', 'old phone', 'packet',
+    // ImageNet trash items
+    'band aid', 'cigarette', 'lighter', 'aerosol', 'plastic bag', 'plastic wrap', 'plastic film', 'battery', 'medicine', 'sharp object', 'diaper', 'sanitary product', 'gum', 'candy wrapper'
   ],
 };
 
@@ -113,8 +119,11 @@ const predefinedMapping: Record<string, string[]> = {
         
         // Load the model
         if (!modelRef.current) {
-          modelRef.current = await mobilenet.load();
-          console.log('MobileNet model loaded');
+          modelRef.current = await mobilenet.load({
+            version: 2,
+            alpha: 0.5, // Smaller model for faster loading
+          });
+          console.log('MobileNetV2 model loaded');
         }
       } catch (error) {
         console.error('Error loading TensorFlow:', error);
@@ -144,7 +153,7 @@ const predefinedMapping: Record<string, string[]> = {
     const result = await ImagePicker.launchCameraAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
-      quality: 1,
+      quality: 0.5, // Balanced quality for better accuracy
     });
 
     if (!result.canceled && result.assets?.[0]?.uri) {
