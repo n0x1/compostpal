@@ -1,9 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Image, StyleSheet, Platform, Button, View, ActivityIndicator, ScrollView } from 'react-native';
-import * as tf from '@tensorflow/tfjs';
 import * as ImagePicker from 'expo-image-picker';
-import * as mobilenet from '@tensorflow-models/mobilenet';
-import { fetch, decodeJpeg } from '@tensorflow/tfjs-react-native';
 import { useFonts } from 'expo-font';
 
 import { HelloWave } from '@/components/HelloWave';
@@ -27,11 +24,14 @@ export default function HomeScreen() {
 }
 
 function HomeScreenContent() {
-  const modelRef = useRef<mobilenet.MobileNet | null>(null);
+  const modelRef = useRef<any | null>(null);
+  const tfRef = useRef<any>(null);
+  const tfrnRef = useRef<any>(null);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [category, setCategory] = useState<string | null>(null);
   const [classification, setClassification] = useState<string | null>(null);
   const [isProcessingImage, setIsProcessingImage] = useState<boolean>(false);
+  const [tfReady, setTfReady] = useState<boolean>(false);
 
 // Predefined mapping for common items with very broad and vague terms. This is used to classify the waste without extraneous use of language models.
 const predefinedMapping: Record<string, string[]> = {
@@ -98,20 +98,29 @@ const predefinedMapping: Record<string, string[]> = {
 
   useEffect(() => {
     async function prepare() {
-      await tf.ready();
-      console.log('TensorFlow loaded');
-    }
-    prepare();
-  }, []);
-
-  useEffect(() => {
-    async function loadModel() {
-      if (!modelRef.current) {
-        modelRef.current = await mobilenet.load();
-        console.log('MobileNet model loaded');
+      try {
+        // Dynamically import TensorFlow modules
+        const tf = await import('@tensorflow/tfjs');
+        const tfrn = await import('@tensorflow/tfjs-react-native');
+        const mobilenet = await import('@tensorflow-models/mobilenet');
+        
+        tfRef.current = tf;
+        tfrnRef.current = tfrn;
+        
+        await tf.ready();
+        console.log('TensorFlow loaded');
+        setTfReady(true);
+        
+        // Load the model
+        if (!modelRef.current) {
+          modelRef.current = await mobilenet.load();
+          console.log('MobileNet model loaded');
+        }
+      } catch (error) {
+        console.error('Error loading TensorFlow:', error);
       }
     }
-    loadModel();
+    prepare();
   }, []);
 
   const getPredefinedCategory = (className: string): string | null => {
@@ -146,21 +155,24 @@ const predefinedMapping: Record<string, string[]> = {
       setIsProcessingImage(true);
 
       try {
-        const response = await fetch(imageUri, {}, { isBinary: true });
+        if (!tfReady || !tfrnRef.current || !modelRef.current) {
+          console.log('TensorFlow is not ready yet');
+          setIsProcessingImage(false);
+          return;
+        }
+
+        const { fetch: tfFetch, decodeJpeg } = tfrnRef.current;
+        const response = await tfFetch(imageUri, {}, { isBinary: true });
         const imageData = new Uint8Array(await response.arrayBuffer());
         const imageTensor = decodeJpeg(imageData);
 
-        if (modelRef.current) {
-          const predictions = await modelRef.current.classify(imageTensor);
-          const topPrediction = predictions[0];
-          console.log('Classification:', topPrediction.className); // Print classification to the terminal
+        const predictions = await modelRef.current.classify(imageTensor);
+        const topPrediction = predictions[0];
+        console.log('Classification:', topPrediction.className); // Print classification to the terminal
 
-          const predefinedCategory = getPredefinedCategory(topPrediction.className);
-          setCategory(predefinedCategory);
-          setClassification(topPrediction.className);
-        } else {
-          console.log('Model is not loaded yet');
-        }
+        const predefinedCategory = getPredefinedCategory(topPrediction.className);
+        setCategory(predefinedCategory);
+        setClassification(topPrediction.className);
       } catch (error) {
         console.error('Error processing image:', error);
       } finally {
