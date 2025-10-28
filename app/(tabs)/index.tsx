@@ -33,7 +33,7 @@ function HomeScreenContent() {
   const [classification, setClassification] = useState<string | null>(null);
   const [isProcessingImage, setIsProcessingImage] = useState<boolean>(false);
 
-// Predefined mapping for common items with very broad and vague terms
+// Predefined mapping for common items with very broad and vague terms. This is used to classify the waste without extraneous use of language models.
 const predefinedMapping: Record<string, string[]> = {
   compost: [
     // All common fruit names
@@ -76,6 +76,8 @@ const predefinedMapping: Record<string, string[]> = {
     'ipod',  // Added iPod under recycle
     // Miscellaneous recyclable items
     'furniture', 'appliance', 'electronics', 'recyclable waste', 'plastic container', 'tote', 'plastic utensil', 'foil tray', 'plastic cup',
+    // Textiles must be recycled in Massachusetts!
+    'clothes', 'shirt', 'pants', 'hat', 'shoes', 'sweater', 'jacket', 'coat', 'dress', 'skirt', 'blouse', 'jeans', 'shorts'
   ],
   trash: [
     // Non-recyclable plastics and containers
@@ -89,7 +91,7 @@ const predefinedMapping: Record<string, string[]> = {
     'old furniture', 'broken appliance', 'broken device', 'damaged electronics', 'shredded paper', 'damaged box', 'ruined book', 'cracked mirror', 'broken chair',
     // Mixed waste and non-compostables
     'rubber', 'fabric', 'leather', 'vinyl', 'latex', 'foil', 'waxed paper', 'plastic film', 'foam', 'gum wrapper', 'gift wrap', 'ribbon', 'string', 'tape',
-    'disposable diaper', 'sanitary product', 'old carpet', 'broken toy', 'old phone', 'torn clothes', 'packet'
+    'diaper', 'sanitary product', 'old carpet', 'broken toy', 'old phone', 'packet'
   ],
 };
 
@@ -97,7 +99,7 @@ const predefinedMapping: Record<string, string[]> = {
   useEffect(() => {
     async function prepare() {
       await tf.ready();
-      console.log('✅ TensorFlow is ready!');
+      console.log('TensorFlow loaded');
     }
     prepare();
   }, []);
@@ -106,7 +108,7 @@ const predefinedMapping: Record<string, string[]> = {
     async function loadModel() {
       if (!modelRef.current) {
         modelRef.current = await mobilenet.load();
-        console.log('✅ MobileNet model loaded!');
+        console.log('MobileNet model loaded');
       }
     }
     loadModel();
@@ -126,7 +128,7 @@ const predefinedMapping: Record<string, string[]> = {
     const permissionResult = await ImagePicker.requestCameraPermissionsAsync();
 
     if (!permissionResult.granted) {
-      alert('Permission to access the camera is required!');
+      alert('Permission to access the camera is required.');
       return;
     }
 
@@ -157,7 +159,7 @@ const predefinedMapping: Record<string, string[]> = {
           setCategory(predefinedCategory);
           setClassification(topPrediction.className);
         } else {
-          console.log('⚠️ Model is not loaded yet.');
+          console.log('Model is not loaded yet');
         }
       } catch (error) {
         console.error('Error processing image:', error);
