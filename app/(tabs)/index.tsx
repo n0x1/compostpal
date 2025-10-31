@@ -113,7 +113,8 @@ const predefinedMapping: Record<string, string[]> = {
         tfRef.current = tf;
         tfrnRef.current = tfrn;
         
-        await tf.ready();
+        // Wait for React Native TensorFlow backend to be ready
+        await tfrn.ready();
         console.log('TensorFlow loaded');
         setTfReady(true);
         
