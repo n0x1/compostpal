@@ -13,7 +13,6 @@
    ```bash
     npx expo start
    ```
-Expo users and ask questions.
 
 # Description
 
